@@ -5,85 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Details Form</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .form-container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        input[type="number"] {
-            width: 100px;
-        }
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        button {
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .form-container { padding: 20px; }
-        }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; background: #f4f4f4; }
+        .form-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        input[type="number"] { width: 120px; }
+        textarea { height: 100px; resize: vertical; }
+        button { width: 100%; background: #4CAF50; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; }
+        .loading { display: none; }
     </style>
 </head>
 <body>
     <div class="form-container">
         <h1>Enter Your Details</h1>
-        <form action="https://formspree.io/f/your-endpoint" method="POST"> <!-- Replace with your form handler -->
-            <label for="name">Full Name:</label>
-            <input type="text" id="name" name="name" required>
+        <div id="successMsg" class="success">✅ Data saved to database successfully!</div>
+        <form id="detailsForm">
+            <label>Full Name:</label>
+            <input type="text" id="name" required>
 
-            <label for="age">Age:</label>
-            <input type="number" id="age" name="age" min="1" max="120" required>
+            <label>Age:</label>
+            <input type="number" id="age" min="1" max="120" required>
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+            <label>Email:</label>
+            <input type="email" id="email" required>
 
-            <label for="phone">Phone:</label>
-            <input type="tel" id="phone" name="phone" required>
+            <label>Phone:</label>
+            <input type="tel" id="phone" required>
 
-            <label for="address">Address:</label>
-            <textarea id="address" name="address" required></textarea>
+            <label>Address:</label>
+            <textarea id="address" required></textarea>
 
-            <button type="submit">Submit Details</button>
+            <button type="submit" id="submitBtn">Save to Database</button>
+            <div id="loading" class="loading">Saving...</div>
         </form>
     </div>
+
+    <script>
+        // PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+        const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxlC6Ed8cyLZw3RtTlrWNYzavVeZ1wmorx4R17xf1UUFjKYtkz9HshS35C7WhSwTcGGuA/exec'; 
+
+        document.getElementById('detailsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            };
+
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch(SHEET_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.result === 'success') {
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('detailsForm').reset();
+                }
+            } catch (error) {
+                alert('Error saving data. Please try again.');
+            }
+            
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        });
+    </script>
 </body>
 </html>
